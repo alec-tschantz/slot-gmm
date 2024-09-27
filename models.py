@@ -23,16 +23,13 @@ class GMMAttention(nn.Module):
         B, N, D = inputs.size()
         K = self.num_slots
 
-        # Initialize mu and sigma for each batch
         mu = self.slots_mu.expand(B, -1, -1)  # Shape: (B, K, D)
         log_sigma = self.slots_log_sigma.expand(B, -1, -1)  # Shape: (B, K, D)
         sigma = torch.exp(log_sigma)  # Variances, Shape: (B, K, D)
 
-        # Initialize mixing coefficients pi
         pi = self.mixing_coefficients.expand(B, -1)  # Shape: (B, K)
 
         for _ in range(self.num_iter):
-            # Compute logits
             x_expanded = inputs.unsqueeze(2)  # Shape: (B, N, 1, D)
             mu_expanded = mu.unsqueeze(1)  # Shape: (B, 1, K, D)
             sigma_expanded = sigma.unsqueeze(1)  # Shape: (B, 1, K, D)
@@ -42,14 +39,9 @@ class GMMAttention(nn.Module):
             log_coeff = -0.5 * torch.log(2 * torch.pi * sigma_expanded + self.epsilon)
             logits = torch.sum(log_coeff + exponent, dim=-1)  # Shape: (B, N, K)
 
-            # Add log mixing coefficients
             log_pi = torch.log(pi + self.epsilon).unsqueeze(1)  # Shape: (B, 1, K)
             logits = logits + log_pi  # Shape: (B, N, K)
-
-            # Compute responsibilities (gamma)
             gamma = F.softmax(logits, dim=-1)  # Shape: (B, N, K)
-
-            # Update mixing coefficients pi
             pi = torch.mean(gamma, dim=1)  # Shape: (B, K)
 
             # Update means mu
@@ -151,16 +143,49 @@ class Encoder(nn.Sequential):
 
 class Decoder(nn.Sequential):
     def __init__(
-        self, hidden_dim=64, output_dim=4, kernel_size=5, padding=2, stride=2, output_kernel_size=3, output_padding=1
+        self,
+        hidden_dim=64,
+        output_dim=4,
+        kernel_size=5,
+        padding=2,
+        stride=2,
+        output_kernel_size=3,
+        output_padding=1,
     ):
         super().__init__(
-            nn.ConvTranspose2d(hidden_dim, hidden_dim, kernel_size=kernel_size, stride=stride, padding=1),
+            nn.ConvTranspose2d(
+                hidden_dim,
+                hidden_dim,
+                kernel_size=kernel_size,
+                stride=stride,
+                padding=1,
+                output_padding=output_padding,
+            ),
             nn.ReLU(inplace=True),
-            nn.ConvTranspose2d(hidden_dim, hidden_dim, kernel_size=kernel_size, stride=stride, padding=1),
+            nn.ConvTranspose2d(
+                hidden_dim,
+                hidden_dim,
+                kernel_size=kernel_size,
+                stride=stride,
+                padding=1,
+                output_padding=0,
+            ),
             nn.ReLU(inplace=True),
-            nn.ConvTranspose2d(hidden_dim, hidden_dim, kernel_size=kernel_size),
+            nn.ConvTranspose2d(
+                hidden_dim,
+                hidden_dim,
+                kernel_size=kernel_size,
+                stride=1,
+                padding=0,
+            ),
             nn.ReLU(inplace=True),
-            nn.ConvTranspose2d(hidden_dim, output_dim, kernel_size=output_kernel_size),
+            nn.ConvTranspose2d(
+                hidden_dim,
+                output_dim,
+                kernel_size=output_kernel_size,
+                stride=1,
+                padding=0,
+            ),
         )
 
 
@@ -183,10 +208,11 @@ class Model(nn.Module):
     def __init__(
         self,
         resolution=(35, 35),
-        num_slots=8,
+        num_slots=4,
         num_iter=3,
-        hidden_dim=64,
-        decoder_initial_size=(8, 8),
+        hidden_dim=32,
+        # decoder_initial_size=(8, 8),
+        decoder_initial_size=(6, 6),
     ):
         super().__init__()
         self.resolution = resolution
