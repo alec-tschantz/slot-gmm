@@ -12,8 +12,9 @@ def test(model, batch):
     with torch.no_grad():
         image = batch["image"][0].unsqueeze(0)
         recon_combined, recons, masks, slots = model(image)
+        num_slots = slots.shape[1]
 
-        fig, ax = plt.subplots(1, 6, figsize=(10, 2))
+        fig, ax = plt.subplots(1, num_slots + 2, figsize=(10, 2))
 
         recons = recons.squeeze(0)
         masks = masks.squeeze(0)
@@ -29,7 +30,7 @@ def test(model, batch):
 
         ax[0].imshow(image)
         ax[1].imshow(recon_combined)
-        for i in range(4):
+        for i in range(num_slots):
             slot_image = recons[i] * masks[i] + (1 - masks[i])
             slot_image = slot_image.permute(1, 2, 0).detach().numpy()
             slot_image = renormalize(slot_image)

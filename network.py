@@ -2,12 +2,72 @@ import torch
 from torch import nn
 
 
+# class Encoder(nn.Sequential):
+#     def __init__(self, hidden_dim=64, kernel_size=5, padding=2):
+#         super().__init__(
+#             nn.Conv2d(3, hidden_dim, kernel_size=kernel_size, padding=padding),
+#             nn.ReLU(inplace=True),
+#             nn.Conv2d(hidden_dim, hidden_dim, kernel_size=kernel_size, padding=padding),
+#             nn.ReLU(inplace=True),
+#         )
+
+
+# class Decoder(nn.Sequential):
+#     def __init__(
+#         self,
+#         hidden_dim=64,
+#         output_dim=4,
+#         kernel_size=5,
+#         padding=2,
+#         stride=2,
+#         output_kernel_size=3,
+#         output_padding=1,
+#     ):
+#         super().__init__(
+#             nn.ConvTranspose2d(
+#                 hidden_dim,
+#                 hidden_dim,
+#                 kernel_size=kernel_size,
+#                 stride=stride,
+#                 padding=1,
+#                 output_padding=output_padding,
+#             ),
+#             nn.ReLU(inplace=True),
+#             nn.ConvTranspose2d(
+#                 hidden_dim,
+#                 hidden_dim,
+#                 kernel_size=kernel_size,
+#                 stride=stride,
+#                 padding=1,
+#                 output_padding=0,
+#             ),
+#             nn.ReLU(inplace=True),
+#             nn.ConvTranspose2d(
+#                 hidden_dim,
+#                 hidden_dim,
+#                 kernel_size=kernel_size,
+#                 stride=1,
+#                 padding=0,
+#             ),
+#             nn.ReLU(inplace=True),
+#             nn.ConvTranspose2d(
+#                 hidden_dim,
+#                 output_dim,
+#                 kernel_size=output_kernel_size,
+#                 stride=1,
+#                 padding=0,
+#             ),
+#         )
+
+
 class Encoder(nn.Sequential):
     def __init__(self, hidden_dim=64, kernel_size=5, padding=2):
         super().__init__(
-            nn.Conv2d(3, hidden_dim, kernel_size=kernel_size, padding=padding),
+            nn.Conv2d(3, hidden_dim, kernel_size=kernel_size, padding=padding, stride=2),
             nn.ReLU(inplace=True),
-            nn.Conv2d(hidden_dim, hidden_dim, kernel_size=kernel_size, padding=padding),
+            nn.Conv2d(hidden_dim, hidden_dim, kernel_size=kernel_size, padding=padding, stride=2),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(hidden_dim, hidden_dim, kernel_size=kernel_size, padding=padding, stride=2),
             nn.ReLU(inplace=True),
         )
 
@@ -46,8 +106,9 @@ class Decoder(nn.Sequential):
                 hidden_dim,
                 hidden_dim,
                 kernel_size=kernel_size,
-                stride=1,
-                padding=0,
+                stride=stride,
+                padding=1,
+                output_padding=0,
             ),
             nn.ReLU(inplace=True),
             nn.ConvTranspose2d(
@@ -55,7 +116,7 @@ class Decoder(nn.Sequential):
                 output_dim,
                 kernel_size=output_kernel_size,
                 stride=1,
-                padding=0,
+                padding=1,
             ),
         )
 
