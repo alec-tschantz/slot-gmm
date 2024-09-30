@@ -65,7 +65,7 @@ class Encoder(nn.Sequential):
         super().__init__(
             nn.Conv2d(3, hidden_dim, kernel_size=kernel_size, padding=padding, stride=2),
             nn.ReLU(inplace=True),
-            nn.Conv2d(hidden_dim, hidden_dim, kesrnel_size=kernel_size, padding=padding, stride=2),
+            nn.Conv2d(hidden_dim, hidden_dim, kernel_size=kernel_size, padding=padding, stride=2),
             nn.ReLU(inplace=True),
             nn.Conv2d(hidden_dim, hidden_dim, kernel_size=kernel_size, padding=padding, stride=2),
             nn.ReLU(inplace=True),
