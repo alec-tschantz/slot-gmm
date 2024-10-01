@@ -73,9 +73,13 @@ class DiscreteAttention(nn.Module):
         pi = self.mixing_coefficients.expand(B, -1)  # (B, K)
 
         for _ in range(self.num_iter):
-            log_q = F.log_softmax(theta, dim=-1)  # (B, K, D)
-            p = F.softmax(inputs, dim=-1)  # (B, N, D)
-            logits = torch.matmul(p, log_q.transpose(1, 2))  # (B, N, K)
+            # log_q = F.log_softmax(theta, dim=-1)  # (B, K, D)
+            # p = F.softmax(inputs, dim=-1)  # (B, N, D)
+            # logits = torch.matmul(p, log_q.transpose(1, 2))  # (B, N, K)
+
+            log_p = F.log_softmax(inputs, dim=-1)  # Compute log p (B, N, D)
+            q = F.softmax(theta, dim=-1)  # Compute q (B, K, D)
+            logits = torch.matmul(log_p, q.transpose(1, 2))  # (B, N, K)
 
             log_pi = torch.log(pi + self.epsilon).unsqueeze(1)  # (B, 1, K)
             logits = logits + log_pi  # (B, N, K)
